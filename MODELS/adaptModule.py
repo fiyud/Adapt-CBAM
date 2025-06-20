@@ -1,4 +1,4 @@
-from common import *
+from .common import *
 
 # CBAM
 class Adapt_CBAM(nn.Module):
@@ -21,7 +21,7 @@ class Adapt_CBAM(nn.Module):
         return x_out * scale
 
 ### A2-Net
-class DoubleAttentionLayer(nn.Module):
+class Adapt_DoubleAttentionLayer(nn.Module):
     """
     Implementation of Double Attention Network. NIPS 2018
     """
@@ -35,7 +35,7 @@ class DoubleAttentionLayer(nn.Module):
         c_n
         reconstruct: `bool` whether to re-construct output to have shape (B, in_channels, L, R)
         """
-        super(DoubleAttentionLayer, self).__init__()
+        super(Adapt_DoubleAttentionLayer, self).__init__()
         self.c_m = c_m
         self.c_n = c_n
         self.in_channels = in_channels
@@ -80,9 +80,9 @@ class DoubleAttentionLayer(nn.Module):
         return tmpZ * scale
 
 # SE-Net
-class SELayer(nn.Module):
+class Adapt_SELayer(nn.Module):
     def __init__(self, channel, reduction=16):
-        super(SELayer, self).__init__()
+        super(Adapt_SELayer, self).__init__()
         self.avg_pool = nn.AdaptiveAvgPool2d(1)
         self.fc = nn.Sequential(
             nn.Linear(channel, channel // reduction, bias=False),
@@ -102,7 +102,7 @@ class SELayer(nn.Module):
         return out * scale
 
 # Triple Attention
-class TripletAttention(nn.Module):
+class Adapt_TripletAttention(nn.Module):
     def __init__(self, kernel_size=7):
         super().__init__()
         self.ch = AttentionGate(kernel_size)
@@ -122,7 +122,7 @@ class TripletAttention(nn.Module):
         return x_out * scale
     
 # Sk Attention
-class SKLayer(nn.Module):
+class Adapt_SKLayer(nn.Module):
     def __init__(self, inplanes, planes, groups=32, ratio=16):
         super().__init__()
         d = max(planes // ratio, 32)
@@ -169,7 +169,7 @@ class SKLayer(nn.Module):
 
     
 # Coordinate Attention
-class CoordinateAttention(nn.Module):
+class Adapt_CoordinateAttention(nn.Module):
     def __init__(self, in_dim, out_dim, reduction=32):
         super().__init__()
         self.pool_h = nn.AdaptiveAvgPool2d((None, 1))

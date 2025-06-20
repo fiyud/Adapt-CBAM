@@ -25,7 +25,7 @@ class BasicBlock(nn.Module):
         self.stride = stride
 
         if use_cbam:
-            self.cbam = CBAM( planes, 16 )
+            self.cbam = TripletAttention(planes) # , 16 
         else:
             self.cbam = None
 
