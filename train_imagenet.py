@@ -355,6 +355,26 @@ best_prec1 = 0
 if not os.path.exists('./checkpoints'):
     os.mkdir('./checkpoints')
 
+import requests
+import zipfile
+
+def download_tinyimagenet(data_dir):
+    url = "http://cs231n.stanford.edu/tiny-imagenet-200.zip"
+    os.makedirs(data_dir, exist_ok=True)
+    zip_path = os.path.join(data_dir, "tiny-imagenet-200.zip")
+    
+    if not os.path.exists(os.path.join(data_dir, "tiny-imagenet-200")):
+        print("Downloading TinyImageNet...")
+        response = requests.get(url, stream=True)
+        with open(zip_path, "wb") as f:
+            for chunk in response.iter_content(chunk_size=8192):
+                f.write(chunk)
+        print("Extracting TinyImageNet...")
+        with zipfile.ZipFile(zip_path, "r") as zip_ref:
+            zip_ref.extractall(data_dir)
+        os.remove(zip_path)
+        print("TinyImageNet downloaded and extracted.")
+
 def main():
     global args, best_prec1
     args = parser.parse_args()
@@ -414,7 +434,23 @@ def main():
                 transforms.ToTensor(),
                 normalize,
             ]))
-
+    elif args.dataset == 'TinyImageNet':
+        download_tinyimagenet(args.data)
+        train_dataset = datasets.ImageFolder(
+            os.path.join(args.data, "tiny-imagenet-200", "train"),
+            transform=transforms.Compose([
+                transforms.RandomResizedCrop(input_size),
+                transforms.RandomHorizontalFlip(),
+                transforms.ToTensor(),
+                normalize,
+            ]))
+        val_dataset = datasets.ImageFolder(
+            os.path.join(args.data, "tiny-imagenet-200", "val"),
+            transform=transforms.Compose([
+                transforms.Resize((input_size, input_size)),
+                transforms.ToTensor(),
+                normalize,
+            ]))
     else:
         train_dataset = datasets.ImageFolder(os.path.join(args.data, 'train'),
             transform=transforms.Compose([
