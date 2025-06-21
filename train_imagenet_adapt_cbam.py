@@ -170,10 +170,21 @@ def main():
         validate(val_loader, model, criterion, 0)
         return
 
+    training_start_time = time.time()
+    total_epoch_times = []
+
     for epoch in range(args.start_epoch, args.epochs):
+        epoch_start_time = time.time()
+        
         adjust_learning_rate(optimizer, epoch)
-        train(train_loader, model, criterion, optimizer, epoch)
+        train_time = train(train_loader, model, criterion, optimizer, epoch)
         prec1 = validate(val_loader, model, criterion, epoch)
+        
+        epoch_end_time = time.time()
+        epoch_time = epoch_end_time - epoch_start_time
+        total_epoch_times.append(epoch_time)
+        
+        print(f'Epoch {epoch + 1} completed in {epoch_time:.2f} seconds')
 
         is_best = prec1 > best_prec1
         best_prec1 = max(prec1, best_prec1)
@@ -185,6 +196,15 @@ def main():
             'optimizer': optimizer.state_dict(),
         }, is_best, args.prefix)
 
+    training_end_time = time.time()
+    total_training_time = training_end_time - training_start_time
+    
+    print(f'\n=== Training Time Summary ===')
+    print(f'Total training time: {total_training_time:.2f} seconds ({total_training_time/3600:.2f} hours)')
+    print(f'Average time per epoch: {sum(total_epoch_times)/len(total_epoch_times):.2f} seconds')
+    print(f'Fastest epoch: {min(total_epoch_times):.2f} seconds')
+    print(f'Slowest epoch: {max(total_epoch_times):.2f} seconds')
+
 def train(train_loader, model, criterion, optimizer, epoch):
     batch_time = AverageMeter()
     data_time = AverageMeter()
@@ -193,6 +213,9 @@ def train(train_loader, model, criterion, optimizer, epoch):
     top5 = AverageMeter()
 
     model.train()
+    
+    # Time the training epoch
+    epoch_start = time.time()
 
     end = time.time()
     for i, (input, target) in enumerate(train_loader):
@@ -223,6 +246,12 @@ def train(train_loader, model, criterion, optimizer, epoch):
                   'Prec@5 {top5.val:.3f} ({top5.avg:.3f})'.format(
                    epoch, i, len(train_loader), batch_time=batch_time,
                    data_time=data_time, loss=losses, top1=top1, top5=top5))
+    
+    epoch_end = time.time()
+    epoch_train_time = epoch_end - epoch_start
+    print(f'Training epoch {epoch + 1} completed in {epoch_train_time:.2f} seconds')
+    
+    return epoch_train_time
 
 def validate(val_loader, model, criterion, epoch):
     batch_time = AverageMeter()
